@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class SkippingRulesSetIntegrationTest extends TestCase
 {
-    public function testShouldSkipWhenLowStockAndLowPrice()
+    final public function testShouldSkipWhenLowStockAndLowPrice(): void
     {
         $product = new ProductImportDTO(
             name: 'Cheap Item',
@@ -31,7 +31,7 @@ class SkippingRulesSetIntegrationTest extends TestCase
         $this->assertTrue($rulesSet->shouldSkip($product));
     }
 
-    public function testShouldSkipWhenHighPrice()
+    final public function testShouldSkipWhenHighPrice(): void
     {
         $product = new ProductImportDTO(
             name: 'Expensive Item',
@@ -49,7 +49,7 @@ class SkippingRulesSetIntegrationTest extends TestCase
         $this->assertTrue($rulesSet->shouldSkip($product));
     }
 
-    public function testShouldNotSkipWhenNormal()
+    final public function testShouldNotSkipWhenNormal(): void
     {
         $product = new ProductImportDTO(
             name: 'Normal Item',

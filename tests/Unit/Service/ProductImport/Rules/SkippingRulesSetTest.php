@@ -6,19 +6,14 @@ namespace App\Tests\Unit\Service\ProductImport\Rules;
 
 use App\DTO\ProductImportDTO;
 use App\Service\ProductImport\SkippingRulesSet;
+use App\Service\ProductImport\SkippingRule\SkippingRuleInterface;
 use PHPUnit\Framework\TestCase;
 
 class SkippingRulesSetTest extends TestCase
 {
-    private SkippingRulesSet $skippingRules;
-
-    protected function setUp(): void
+    final public function testShouldSkipReturnsFalseWithNoRules(): void
     {
-        $this->skippingRules = new SkippingRulesSet();
-    }
-
-    public function testShouldSkipReturnsFalse(): void
-    {
+        $skippingRules = new SkippingRulesSet([]);
         $dto = new ProductImportDTO(
             name: 'Test Product',
             description: 'Test Description',
@@ -29,40 +24,66 @@ class SkippingRulesSetTest extends TestCase
             discontinuedAt: null
         );
 
-        $this->assertFalse($this->skippingRules->shouldSkip($dto, 1));
-        $this->assertFalse($this->skippingRules->shouldSkip($dto, 100));
+        $this->assertFalse($skippingRules->shouldSkip($dto));
     }
 
-    public function testWithDiscontinuedProduct(): void
+    final public function testShouldSkipReturnsTrueWhenRuleMatches(): void
     {
-        $dto = new ProductImportDTO(
-            name: 'Discontinued Product',
-            description: 'Old Product',
-            code: 'OLD001',
-            stockLevel: 0,
-            price: null,
-            addedAt: new \DateTime(),
-            discontinuedAt: new \DateTime()
-        );
+        $rule = $this->createMock(SkippingRuleInterface::class);
+        $rule->method('shouldSkip')->willReturn(true);
 
-        // Even discontinued products should not be skipped with default rules
-        $this->assertFalse($this->skippingRules->shouldSkip($dto, 1));
-    }
-
-    public function testWithInvalidData(): void
-    {
+        $skippingRules = new SkippingRulesSet([$rule]);
         $dto = new ProductImportDTO(
-            name: '',
-            description: '',
-            code: '',
-            stockLevel: null,
-            price: null,
+            name: 'Skip Product',
+            description: 'Should be skipped',
+            code: 'SKIP001',
+            stockLevel: 1,
+            price: 1.0,
             addedAt: new \DateTime(),
             discontinuedAt: null
         );
 
-        // Even invalid data should not be skipped by default rules
-        // (validation errors are handled elsewhere)
-        $this->assertFalse($this->skippingRules->shouldSkip($dto, 1));
+        $this->assertTrue($skippingRules->shouldSkip($dto));
+    }
+
+    final public function testShouldSkipReturnsFalseWhenNoRuleMatches(): void
+    {
+        $rule = $this->createMock(SkippingRuleInterface::class);
+        $rule->method('shouldSkip')->willReturn(false);
+
+        $skippingRules = new SkippingRulesSet([$rule]);
+        $dto = new ProductImportDTO(
+            name: 'Valid Product',
+            description: 'Should not be skipped',
+            code: 'VALID001',
+            stockLevel: 100,
+            price: 100.0,
+            addedAt: new \DateTime(),
+            discontinuedAt: null
+        );
+
+        $this->assertFalse($skippingRules->shouldSkip($dto));
+    }
+
+    final public function testShouldSkipReturnsTrueIfAnyRuleMatches(): void
+    {
+        $rule1 = $this->createMock(SkippingRuleInterface::class);
+        $rule1->method('shouldSkip')->willReturn(false);
+
+        $rule2 = $this->createMock(SkippingRuleInterface::class);
+        $rule2->method('shouldSkip')->willReturn(true);
+
+        $skippingRules = new SkippingRulesSet([$rule1, $rule2]);
+        $dto = new ProductImportDTO(
+            name: 'Mixed Product',
+            description: 'Should be skipped by second rule',
+            code: 'MIXED001',
+            stockLevel: 5,
+            price: 2.0,
+            addedAt: new \DateTime(),
+            discontinuedAt: null
+        );
+
+        $this->assertTrue($skippingRules->shouldSkip($dto));
     }
 }

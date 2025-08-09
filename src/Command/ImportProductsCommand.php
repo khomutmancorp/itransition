@@ -26,14 +26,14 @@ class ImportProductsCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
+    final protected function configure(): void
     {
         $this
             ->addArgument('filename', InputArgument::REQUIRED, 'Path to the file to import (CSV, TXT, JSON)')
             ->addOption('test-mode', null, InputOption::VALUE_NONE, 'Run in test mode without persisting data');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    final protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         

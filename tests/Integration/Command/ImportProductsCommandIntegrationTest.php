@@ -20,7 +20,7 @@ class ImportProductsCommandIntegrationTest extends KernelTestCase
     private string $testFilePath;
     private string $uploadsDir;
 
-    protected function setUp(): void
+    final protected function setUp(): void
     {
         parent::setUp();
 
@@ -41,7 +41,7 @@ class ImportProductsCommandIntegrationTest extends KernelTestCase
         $this->commandTester = new CommandTester($command);
     }
 
-    protected function tearDown(): void
+    final protected function tearDown(): void
     {
         $this->cleanupTestFiles();
         $this->entityManager->close();
