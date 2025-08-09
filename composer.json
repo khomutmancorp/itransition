@@ -57,7 +57,11 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "test": "php bin/phpunit",
+        "test-unit": "php bin/phpunit tests/Unit",
+        "test-integration": "php bin/phpunit tests/Integration",
+        "test-functional": "php bin/phpunit tests/Functional"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -67,5 +71,11 @@
             "allow-contrib": false,
             "require": "6.3.*"
         }
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.24",
+        "phpunit/phpunit": "^10.0",
+        "symfony/browser-kit": "6.3.*",
+        "symfony/css-selector": "6.3.*"
     }
 }

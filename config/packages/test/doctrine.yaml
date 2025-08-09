@@ -1,0 +1,19 @@
+doctrine:
+    dbal:
+        # Use an in-memory SQLite database for tests
+        url: 'sqlite:///:memory:'
+        driver: 'pdo_sqlite'
+        charset: utf8mb4
+        default_table_options:
+            charset: utf8mb4
+            collate: utf8mb4_unicode_ci
+    orm:
+        auto_generate_proxy_classes: true
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App

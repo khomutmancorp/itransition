@@ -21,3 +21,7 @@
 ehthumbs.db
 Thumbs.db
 ###< macOS ###
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

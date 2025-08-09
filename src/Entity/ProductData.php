@@ -31,7 +31,7 @@ class ProductData
     #[ORM\Column(name: 'dtmDiscontinued', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dtmDiscontinued = null;
 
-    #[ORM\Column(name: 'stmTimestamp', type: Types::DATETIME_MUTABLE, columnDefinition: 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')]
+    #[ORM\Column(name: 'stmTimestamp', type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $stmTimestamp = null;
 
     public function getIntProductDataId(): ?int
