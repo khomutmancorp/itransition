@@ -6,8 +6,10 @@ namespace App\Service\ProductImport\Batch;
 
 use App\DTO\ProductImportDTO;
 use App\Service\ProductImport\BulkWriterInterface;
+use App\Service\ProductImport\ProductBulkWriter;
+use App\Service\ProductImport\Statistics\ImportStatistics;
 
-final class BatchProcessor
+class BatchProcessor
 {
     private array $batch = [];
 
@@ -26,11 +28,14 @@ final class BatchProcessor
         }
     }
 
-    public function flush(): void
+    public function flush(?ImportStatistics $statistics = null): void
     {
         if (empty($this->batch)) {
             return;
         }
+
+        $createdBefore = $this->getCreatedCount();
+        $updatedBefore = $this->getUpdatedCount();
 
         // Process all DTOs in current batch
         foreach ($this->batch as $dto) {
@@ -40,6 +45,18 @@ final class BatchProcessor
         // Flush to database
         $this->bulkWriter->flushBatch();
         
+        // Update statistics if provided
+        if ($statistics !== null) {
+            $createdAfter = $this->getCreatedCount();
+            $updatedAfter = $this->getUpdatedCount();
+            
+            $createdDiff = $createdAfter - $createdBefore;
+            $updatedDiff = $updatedAfter - $updatedBefore;
+            
+            $statistics->incrementCreated($createdDiff);
+            $statistics->incrementUpdated($updatedDiff);
+        }
+        
         // Clear memory
         $this->batch = [];
     }
@@ -47,5 +64,21 @@ final class BatchProcessor
     public function isEmpty(): bool
     {
         return empty($this->batch);
+    }
+
+    public function getCreatedCount(): int
+    {
+        if ($this->bulkWriter instanceof ProductBulkWriter) {
+            return $this->bulkWriter->getCreatedCount();
+        }
+        return 0;
+    }
+
+    public function getUpdatedCount(): int
+    {
+        if ($this->bulkWriter instanceof ProductBulkWriter) {
+            return $this->bulkWriter->getUpdatedCount();
+        }
+        return 0;
     }
 }

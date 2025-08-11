@@ -6,7 +6,7 @@ namespace App\Service\ProductImport\Factory;
 
 use App\Service\ProductImport\Parser\FileParserInterface;
 
-final readonly class ParserFactory
+readonly class ParserFactory
 {
     /**
      * @param iterable<FileParserInterface> $parsers

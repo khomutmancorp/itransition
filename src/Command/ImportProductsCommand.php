@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\DTO\ImportProducts\ImportResult;
 use App\Service\ProductImport\ProductImportService;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -26,14 +27,14 @@ class ImportProductsCommand extends Command
         parent::__construct();
     }
 
-    final protected function configure(): void
+    protected function configure(): void
     {
         $this
             ->addArgument('filename', InputArgument::REQUIRED, 'Path to the file to import (CSV, TXT, JSON)')
             ->addOption('test-mode', null, InputOption::VALUE_NONE, 'Run in test mode without persisting data');
     }
 
-    final protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         
@@ -50,10 +51,11 @@ class ImportProductsCommand extends Command
         
         try {
             $result = $this->importService->execute($filename, $testMode);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result = new ImportResult(
                 processed: 0,
-                success: 0,
+                created: 0,
+                updated: 0,
                 skipped: 0,
                 errors: [$e->getMessage()]
             );
@@ -64,15 +66,15 @@ class ImportProductsCommand extends Command
             ['Metric', 'Count'],
             [
                 ['Items processed', $result->processed],
-                ['Items successful', $result->success],
+                ['Items successful', $result->getSuccess()],
                 ['Items skipped', $result->skipped],
                 ['Errors', count($result->errors)],
             ]
         );
         
         // Show success message
-        if ($result->success > 0) {
-            $io->success(sprintf('Successfully imported %d products!', $result->success));
+        if ($result->getSuccess() > 0) {
+            $io->success(sprintf('Successfully imported %d products!', $result->getSuccess()));
         }
         
         // Show errors if any

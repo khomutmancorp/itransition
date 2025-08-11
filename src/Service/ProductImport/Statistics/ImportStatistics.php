@@ -6,10 +6,11 @@ namespace App\Service\ProductImport\Statistics;
 
 use App\DTO\ImportProducts\ImportResult;
 
-final class ImportStatistics
+class ImportStatistics
 {
     private int $processed = 0;
-    private int $success = 0;
+    private int $created = 0;
+    private int $updated = 0;
     private int $skipped = 0;
     private array $errors = [];
 
@@ -18,9 +19,14 @@ final class ImportStatistics
         $this->processed++;
     }
 
-    public function incrementSuccess(): void
+    public function incrementCreated(int $count = 1): void
     {
-        $this->success++;
+        $this->created += $count;
+    }
+
+    public function incrementUpdated(int $count = 1): void
+    {
+        $this->updated += $count;
     }
 
     public function incrementSkipped(): void
@@ -47,7 +53,8 @@ final class ImportStatistics
     {
         return new ImportResult(
             processed: $this->processed,
-            success: $this->success,
+            created: $this->created,
+            updated: $this->updated,
             skipped: $this->skipped,
             errors: $this->errors
         );

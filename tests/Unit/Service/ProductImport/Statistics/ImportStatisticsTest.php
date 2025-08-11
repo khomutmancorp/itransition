@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Service\ProductImport\Statistics;
 use App\Service\ProductImport\Statistics\ImportStatistics;
 use PHPUnit\Framework\TestCase;
 
-class ImportStatisticsTest extends TestCase
+final class ImportStatisticsTest extends TestCase
 {
     private ImportStatistics $statistics;
 
@@ -21,7 +21,9 @@ class ImportStatisticsTest extends TestCase
         $result = $this->statistics->toResult();
 
         $this->assertSame(0, $result->processed);
-        $this->assertSame(0, $result->success);
+        $this->assertSame(0, $result->created);
+        $this->assertSame(0, $result->updated);
+        $this->assertSame(0, $result->getSuccess());
         $this->assertSame(0, $result->skipped);
         $this->assertSame([], $result->errors);
         $this->assertFalse($this->statistics->hasErrors());
@@ -31,13 +33,16 @@ class ImportStatisticsTest extends TestCase
     {
         $this->statistics->incrementProcessed();
         $this->statistics->incrementProcessed();
-        $this->statistics->incrementSuccess();
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementUpdated();
         $this->statistics->incrementSkipped();
 
         $result = $this->statistics->toResult();
 
         $this->assertSame(2, $result->processed);
-        $this->assertSame(1, $result->success);
+        $this->assertSame(1, $result->created);
+        $this->assertSame(1, $result->updated);
+        $this->assertSame(2, $result->getSuccess());
         $this->assertSame(1, $result->skipped);
     }
 
@@ -100,30 +105,96 @@ class ImportStatisticsTest extends TestCase
 
     public function testCompleteWorkflow(): void
     {
-        // Simulate processing 5 records with 2 successes, 1 skip, and 2 errors
-        $this->statistics->incrementProcessed(); // Record 1
-        $this->statistics->incrementSuccess();
+        // Simulate processing 5 records with 2 created, 1 updated, 1 skip, and 1 error
+        $this->statistics->incrementProcessed(); // Record 1 - new
+        $this->statistics->incrementCreated();
 
-        $this->statistics->incrementProcessed(); // Record 2
-        $this->statistics->incrementSuccess();
+        $this->statistics->incrementProcessed(); // Record 2 - updated
+        $this->statistics->incrementUpdated();
 
-        $this->statistics->incrementProcessed(); // Record 3
+        $this->statistics->incrementProcessed(); // Record 3 - skipped
         $this->statistics->incrementSkipped();
-        $this->statistics->addError('Record {"code":"INVALID"} can\'t be added: Code is required. Line: 2');
 
-        $this->statistics->incrementProcessed(); // Record 4
-        $this->statistics->incrementSkipped();
-        $this->statistics->addError('Record {"price":"invalid"} can\'t be added: Price must be numeric. Line: 7');
+        $this->statistics->incrementProcessed(); // Record 4 - error
+        $this->statistics->addError('Record {"code":"INVALID"} can\'t be added: Code is required. Line: 4');
 
-        $this->statistics->incrementProcessed(); // Record 5
-        $this->statistics->incrementSuccess();
+        $this->statistics->incrementProcessed(); // Record 5 - new
+        $this->statistics->incrementCreated();
 
         $result = $this->statistics->toResult();
 
         $this->assertSame(5, $result->processed);
-        $this->assertSame(3, $result->success);
-        $this->assertSame(2, $result->skipped);
-        $this->assertCount(2, $result->errors);
+        $this->assertSame(2, $result->created);
+        $this->assertSame(1, $result->updated);
+        $this->assertSame(3, $result->getSuccess()); // created + updated
+        $this->assertSame(1, $result->skipped);
+        $this->assertCount(1, $result->errors);
         $this->assertTrue($this->statistics->hasErrors());
+    }
+
+    public function testIncrementCreatedAndUpdated(): void
+    {
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementUpdated();
+
+        $result = $this->statistics->toResult();
+
+        $this->assertSame(2, $result->created);
+        $this->assertSame(1, $result->updated);
+        $this->assertSame(3, $result->getSuccess());
+    }
+
+    public function testGetSuccessCalculatesCorrectly(): void
+    {
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementCreated();
+        $this->statistics->incrementUpdated();
+        $this->statistics->incrementUpdated();
+
+        $result = $this->statistics->toResult();
+
+        $this->assertSame(3, $result->created);
+        $this->assertSame(2, $result->updated);
+        $this->assertSame(5, $result->getSuccess());
+    }
+
+    public function testIncrementCreatedWithCustomCount(): void
+    {
+        $this->statistics->incrementCreated(3);
+        $this->statistics->incrementCreated(2);
+
+        $result = $this->statistics->toResult();
+
+        $this->assertSame(5, $result->created);
+        $this->assertSame(0, $result->updated);
+        $this->assertSame(5, $result->getSuccess());
+    }
+
+    public function testIncrementUpdatedWithCustomCount(): void
+    {
+        $this->statistics->incrementUpdated(4);
+        $this->statistics->incrementUpdated();
+
+        $result = $this->statistics->toResult();
+
+        $this->assertSame(0, $result->created);
+        $this->assertSame(5, $result->updated);
+        $this->assertSame(5, $result->getSuccess());
+    }
+
+    public function testMixedIncrementWithDefaultAndCustomCounts(): void
+    {
+        $this->statistics->incrementCreated(3); // Custom count
+        $this->statistics->incrementCreated();  // Default count (1)
+        $this->statistics->incrementUpdated(2); // Custom count
+        $this->statistics->incrementUpdated();  // Default count (1)
+
+        $result = $this->statistics->toResult();
+
+        $this->assertSame(4, $result->created); // 3 + 1
+        $this->assertSame(3, $result->updated); // 2 + 1
+        $this->assertSame(7, $result->getSuccess());
     }
 }

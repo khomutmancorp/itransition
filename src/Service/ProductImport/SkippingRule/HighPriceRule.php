@@ -6,7 +6,7 @@ use App\DTO\ProductImportDTO;
 
 class HighPriceRule implements SkippingRuleInterface
 {
-    final public function shouldSkip(ProductImportDTO $product): bool
+    public function shouldSkip(ProductImportDTO $product): bool
     {
         return $product->price !== null && $product->price > 1000;
     }

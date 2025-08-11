@@ -8,7 +8,7 @@ use App\DTO\ProductImportDTO;
 use App\Service\ProductImport\Interface\SkippingRulesSetInterface;
 use App\Service\ProductImport\SkippingRule\SkippingRuleInterface;
 
-final readonly class SkippingRulesSet implements SkippingRulesSetInterface
+readonly class SkippingRulesSet implements SkippingRulesSetInterface
 {
     /**
      * @param iterable<SkippingRuleInterface> $rules

@@ -11,9 +11,9 @@ use App\Service\ProductImport\SkippingRule\LowStockLowPriceRule;
 use App\Service\ProductImport\SkippingRulesSet;
 use PHPUnit\Framework\TestCase;
 
-class SkippingRulesSetIntegrationTest extends TestCase
+final class SkippingRulesSetIntegrationTest extends TestCase
 {
-    final public function testShouldSkipWhenLowStockAndLowPrice(): void
+    public function testShouldSkipWhenLowStockAndLowPrice(): void
     {
         $product = new ProductImportDTO(
             name: 'Cheap Item',
@@ -31,7 +31,7 @@ class SkippingRulesSetIntegrationTest extends TestCase
         $this->assertTrue($rulesSet->shouldSkip($product));
     }
 
-    final public function testShouldSkipWhenHighPrice(): void
+    public function testShouldSkipWhenHighPrice(): void
     {
         $product = new ProductImportDTO(
             name: 'Expensive Item',
@@ -49,7 +49,7 @@ class SkippingRulesSetIntegrationTest extends TestCase
         $this->assertTrue($rulesSet->shouldSkip($product));
     }
 
-    final public function testShouldNotSkipWhenNormal(): void
+    public function testShouldNotSkipWhenNormal(): void
     {
         $product = new ProductImportDTO(
             name: 'Normal Item',

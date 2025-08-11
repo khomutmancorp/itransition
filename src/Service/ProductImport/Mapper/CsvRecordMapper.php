@@ -8,7 +8,7 @@ use App\DTO\ProductImportDTO;
 use App\Service\ProductImport\Mapper\ProductCsvColumnMapper;
 use App\Service\ProductImport\ValidationUtils;
 
-final readonly class CsvRecordMapper
+readonly class CsvRecordMapper
 {
     // No constructor needed - using constants directly
 
@@ -52,7 +52,6 @@ final readonly class CsvRecordMapper
             code: $code,
             stockLevel: $stockLevel,
             price: $price,
-            addedAt: new \DateTime(),
             discontinuedAt: $discontinuedAt,
         );
     }

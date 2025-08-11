@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -34,13 +36,13 @@ class Product
     private ?string $price = null;
 
     #[ORM\Column(name: 'added_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $addedAt = null;
+    private ?DateTimeInterface $addedAt = null;
 
     #[ORM\Column(name: 'discontinued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $discontinuedAt = null;
+    private ?DateTimeInterface $discontinuedAt = null;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt = null;
 
     public function getId(): ?int
     {
@@ -52,7 +54,7 @@ class Product
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): self
     {
         $this->name = $name;
         return $this;
@@ -63,7 +65,7 @@ class Product
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(string $description): self
     {
         $this->description = $description;
         return $this;
@@ -74,7 +76,7 @@ class Product
         return $this->code;
     }
 
-    public function setCode(string $code): static
+    public function setCode(string $code): self
     {
         $this->code = $code;
         return $this;
@@ -85,7 +87,7 @@ class Product
         return $this->stockLevel;
     }
 
-    public function setStockLevel(?int $stockLevel): static
+    public function setStockLevel(?int $stockLevel): self
     {
         $this->stockLevel = $stockLevel;
         return $this;
@@ -96,40 +98,40 @@ class Product
         return $this->price;
     }
 
-    public function setPrice(?string $price): static
+    public function setPrice(?string $price): self
     {
         $this->price = $price;
         return $this;
     }
 
-    public function getAddedAt(): ?\DateTimeInterface
+    public function getAddedAt(): ?DateTimeInterface
     {
         return $this->addedAt;
     }
 
-    public function setAddedAt(?\DateTimeInterface $addedAt): static
+    public function setAddedAt(?DateTimeInterface $addedAt): self
     {
         $this->addedAt = $addedAt;
         return $this;
     }
 
-    public function getDiscontinuedAt(): ?\DateTimeInterface
+    public function getDiscontinuedAt(): ?DateTimeInterface
     {
         return $this->discontinuedAt;
     }
 
-    public function setDiscontinuedAt(?\DateTimeInterface $discontinuedAt): static
+    public function setDiscontinuedAt(?DateTimeInterface $discontinuedAt): self
     {
         $this->discontinuedAt = $discontinuedAt;
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
         return $this;
@@ -139,13 +141,13 @@ class Product
     public function onPrePersist(): void
     {
         if ($this->updatedAt === null) {
-            $this->updatedAt = new \DateTime();
+            $this->updatedAt = new DateTime();
         }
     }
 
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        $this->updatedAt = new \DateTime();
+        $this->updatedAt = new DateTime();
     }
 }

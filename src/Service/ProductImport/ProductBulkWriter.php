@@ -9,45 +9,55 @@ use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProductBulkWriter implements BulkWriterInterface
+class ProductBulkWriter implements BulkWriterInterface
 {
     private array $batch = [];
-
-    private int $batchSize;
+    private int $createdCount = 0;
+    private int $updatedCount = 0;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        int $batchSize
+        private readonly ProductRepository $productRepository,
+        private readonly int $batchSize
     ) {
-        $this->batchSize = $batchSize;
     }
 
     public function addToBatch(ProductImportDTO $dto): void
     {
-        $entity = $this->createEntityFromDTO($dto);
-        $this->batch[] = $entity;
+        $this->batch[] = $dto;
 
         if ($this->getCurrentBatchCount() >= $this->batchSize) {
             $this->flushBatch();
         }
     }
 
-    public function flushBatch(): int
+    public function flushBatch(): void
     {
         if (empty($this->batch)) {
-            return 0;
+            return;
         }
 
-        $count = count($this->batch);
+        // Extract codes from current batch for bulk lookup
+        $codes = array_map(static fn($dto) => $dto->code, $this->batch);
+        $existingProducts = $this->productRepository->findByCodes($codes);
 
-        foreach ($this->batch as $entity) {
-            $this->entityManager->persist($entity);
+        foreach ($this->batch as $dto) {
+            if (isset($existingProducts[$dto->code])) {
+                // Update existing product
+                $product = $existingProducts[$dto->code];
+                $this->updateProductFromDTO($product, $dto);
+                $this->updatedCount++;
+            } else {
+                // Create new product
+                $product = $this->createEntityFromDTO($dto);
+                $this->entityManager->persist($product);
+                $this->createdCount++;
+            }
         }
 
         $this->entityManager->flush();
+        $count = count($this->batch);
         $this->clearBatch();
-
-        return $count;
     }
 
     public function clearBatch(): void
@@ -56,18 +66,14 @@ final class ProductBulkWriter implements BulkWriterInterface
         $this->entityManager->clear();
     }
 
-    public function setBatchSize(int $size): void
+    public function getCreatedCount(): int
     {
-        if ($size <= 0) {
-            throw new \InvalidArgumentException('Batch size must be greater than 0');
-        }
-
-        $this->batchSize = $size;
+        return $this->createdCount;
     }
 
-    public function getBatchSize(): int
+    public function getUpdatedCount(): int
     {
-        return $this->batchSize;
+        return $this->updatedCount;
     }
 
     public function getCurrentBatchCount(): int
@@ -78,20 +84,21 @@ final class ProductBulkWriter implements BulkWriterInterface
     private function createEntityFromDTO(ProductImportDTO $dto): Product
     {
         $entity = new Product();
-        $entity->setName($dto->name);
-        $entity->setDescription($dto->description);
-        $entity->setCode($dto->code);
-        $entity->setStockLevel($dto->stockLevel);
-        $entity->setPrice($dto->price !== null ? (string) $dto->price : null);
-
-        if ($dto->addedAt !== null) {
-            $entity->setAddedAt($dto->addedAt);
-        }
-
-        if ($dto->discontinuedAt !== null) {
-            $entity->setDiscontinuedAt($dto->discontinuedAt);
-        }
+        $entity->setCode($dto->code); // Set code only for new products
+        $this->updateProductFromDTO($entity, $dto);
 
         return $entity;
+    }
+
+    private function updateProductFromDTO(Product $product, ProductImportDTO $dto): void
+    {
+        $product->setName($dto->name);
+        $product->setDescription($dto->description);
+        $product->setStockLevel($dto->stockLevel);
+        $product->setPrice($dto->price !== null ? (string) $dto->price : null);
+
+        if ($dto->discontinuedAt !== null) {
+            $product->setDiscontinuedAt($dto->discontinuedAt);
+        }
     }
 }

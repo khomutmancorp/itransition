@@ -9,7 +9,7 @@ use App\Service\ProductImport\Mapper\CsvRecordMapper;
 use League\Csv\Exception;
 use League\Csv\Reader;
 
-final readonly class CsvStreamingParser implements FileParserInterface
+readonly class CsvStreamingParser implements FileParserInterface
 {
     public function __construct(
         private CsvRecordMapper $recordMapper

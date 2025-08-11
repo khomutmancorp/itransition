@@ -9,8 +9,10 @@ use App\Service\ProductImport\Batch\BatchProcessor;
 use App\Service\ProductImport\Factory\ParserFactory;
 use App\Service\ProductImport\Interface\SkippingRulesSetInterface;
 use App\Service\ProductImport\Statistics\ImportStatistics;
+use Exception;
+use RuntimeException;
 
-final readonly class ProductImportService
+readonly class ProductImportService
 {
     public function __construct(
         private ParserFactory $parserFactory,
@@ -47,9 +49,7 @@ final readonly class ProductImportService
                     if (!$testMode) {
                         $this->batchProcessor->addToBatch($dto);
                     }
-                    
-                    $statistics->incrementSuccess();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $statistics->addError(sprintf(
                         "Record %s can't be added: %s. Line: %d",
                         json_encode($record, JSON_THROW_ON_ERROR),
@@ -61,11 +61,11 @@ final readonly class ProductImportService
             
             // Flush any remaining items in batch
             if (!$testMode) {
-                $this->batchProcessor->flush();
+                $this->batchProcessor->flush($statistics);
             }
 
-        } catch (\Exception $e) {
-            throw new \RuntimeException(
+        } catch (Exception $e) {
+            throw new RuntimeException(
                 "Failed to process file {$filePath}: " . $e->getMessage(),
                 0,
                 $e

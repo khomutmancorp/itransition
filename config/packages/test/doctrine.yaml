@@ -1,7 +1,7 @@
 doctrine:
     dbal:
         # Use an in-memory SQLite database for tests
-        url: 'sqlite:///:memory:'
+        url: '%env(resolve:DATABASE_URL)%'
         driver: 'pdo_sqlite'
         charset: utf8mb4
         default_table_options:

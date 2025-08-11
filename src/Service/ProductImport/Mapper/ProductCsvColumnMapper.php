@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\ProductImport\Mapper;
 
-final class ProductCsvColumnMapper
+class ProductCsvColumnMapper
 {
     // CSV Column Names - Constants for direct use
     public const COLUMN_PRODUCT_CODE = 'Product Code';

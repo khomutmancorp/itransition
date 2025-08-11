@@ -10,13 +10,9 @@ interface BulkWriterInterface
 {
     public function addToBatch(ProductImportDTO $dto): void;
     
-    public function flushBatch(): int;
+    public function flushBatch(): void;
     
     public function clearBatch(): void;
-    
-    public function setBatchSize(int $size): void;
-    
-    public function getBatchSize(): int;
     
     public function getCurrentBatchCount(): int;
 }

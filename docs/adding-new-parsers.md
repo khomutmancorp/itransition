@@ -107,7 +107,6 @@ final readonly class JsonRecordMapper
             code: $code,
             stockLevel: $stockLevel,
             price: $price,
-            addedAt: new \DateTime(),
             discontinuedAt: $discontinuedAt,
         );
     }

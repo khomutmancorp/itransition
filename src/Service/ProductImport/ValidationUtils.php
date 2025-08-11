@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\ProductImport;
 
-final class ValidationUtils
+class ValidationUtils
 {
     public static function validateRequired(mixed $value, string $fieldName): string
     {

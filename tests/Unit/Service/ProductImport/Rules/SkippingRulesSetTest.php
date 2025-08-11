@@ -9,9 +9,9 @@ use App\Service\ProductImport\SkippingRulesSet;
 use App\Service\ProductImport\SkippingRule\SkippingRuleInterface;
 use PHPUnit\Framework\TestCase;
 
-class SkippingRulesSetTest extends TestCase
+final class SkippingRulesSetTest extends TestCase
 {
-    final public function testShouldSkipReturnsFalseWithNoRules(): void
+    public function testShouldSkipReturnsFalseWithNoRules(): void
     {
         $skippingRules = new SkippingRulesSet([]);
         $dto = new ProductImportDTO(
@@ -20,14 +20,13 @@ class SkippingRulesSetTest extends TestCase
             code: 'TEST001',
             stockLevel: 10,
             price: 19.99,
-            addedAt: new \DateTime(),
             discontinuedAt: null
         );
 
         $this->assertFalse($skippingRules->shouldSkip($dto));
     }
 
-    final public function testShouldSkipReturnsTrueWhenRuleMatches(): void
+    public function testShouldSkipReturnsTrueWhenRuleMatches(): void
     {
         $rule = $this->createMock(SkippingRuleInterface::class);
         $rule->method('shouldSkip')->willReturn(true);
@@ -39,14 +38,13 @@ class SkippingRulesSetTest extends TestCase
             code: 'SKIP001',
             stockLevel: 1,
             price: 1.0,
-            addedAt: new \DateTime(),
             discontinuedAt: null
         );
 
         $this->assertTrue($skippingRules->shouldSkip($dto));
     }
 
-    final public function testShouldSkipReturnsFalseWhenNoRuleMatches(): void
+    public function testShouldSkipReturnsFalseWhenNoRuleMatches(): void
     {
         $rule = $this->createMock(SkippingRuleInterface::class);
         $rule->method('shouldSkip')->willReturn(false);
@@ -58,14 +56,13 @@ class SkippingRulesSetTest extends TestCase
             code: 'VALID001',
             stockLevel: 100,
             price: 100.0,
-            addedAt: new \DateTime(),
             discontinuedAt: null
         );
 
         $this->assertFalse($skippingRules->shouldSkip($dto));
     }
 
-    final public function testShouldSkipReturnsTrueIfAnyRuleMatches(): void
+    public function testShouldSkipReturnsTrueIfAnyRuleMatches(): void
     {
         $rule1 = $this->createMock(SkippingRuleInterface::class);
         $rule1->method('shouldSkip')->willReturn(false);
@@ -80,7 +77,6 @@ class SkippingRulesSetTest extends TestCase
             code: 'MIXED001',
             stockLevel: 5,
             price: 2.0,
-            addedAt: new \DateTime(),
             discontinuedAt: null
         );
 

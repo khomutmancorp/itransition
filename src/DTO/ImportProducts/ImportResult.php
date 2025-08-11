@@ -8,13 +8,19 @@ readonly class ImportResult
 {
     public function __construct(
         public int $processed,
-        public int $success,
+        public int $created,
+        public int $updated,
         public int $skipped,
         public array $errors
     ) {
     }
 
-    final public function hasErrors(): bool
+    public function getSuccess(): int
+    {
+        return $this->created + $this->updated;
+    }
+
+    public function hasErrors(): bool
     {
         return !empty($this->errors);
     }
