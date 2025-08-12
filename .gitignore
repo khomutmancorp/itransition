@@ -25,3 +25,7 @@ Thumbs.db
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+###> IDE ###
+.idea/
+###< IDE ###

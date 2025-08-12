@@ -1,4 +1,5 @@
 parameters:
+    app.import.batch_size: 1000
 
 services:
     _defaults:
@@ -11,3 +12,37 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    # Configure ProductBulkWriter with batch size
+    App\Service\ProductImport\ProductBulkWriter:
+        arguments:
+            $batchSize: '%app.import.batch_size%'
+
+    # Configure BatchProcessor with batch size
+    App\Service\ProductImport\Batch\BatchProcessor:
+        arguments:
+            $batchSize: '%app.import.batch_size%'
+
+    # Tag all file parsers
+    _instanceof:
+        App\Service\ProductImport\Parser\FileParserInterface:
+            tags: ['app.file_parser']
+        App\Service\ProductImport\SkippingRule\SkippingRuleInterface:
+            tags: ['app.skipping_rule']
+
+    # Configure ParserFactory with tagged parsers
+    App\Service\ProductImport\Factory\ParserFactory:
+        arguments:
+            $parsers: !tagged_iterator app.file_parser
+
+    App\Service\ProductImport\SkippingRulesSet:
+        arguments:
+            $rules: !tagged_iterator app.skipping_rule
+
+    # Configure import service with parser factory
+    App\Service\ProductImport\ProductImportService:
+        public: true
+        arguments:
+            $parserFactory: '@App\Service\ProductImport\Factory\ParserFactory'
+            $batchProcessor: '@App\Service\ProductImport\Batch\BatchProcessor'
+            $skippingRules: '@App\Service\ProductImport\SkippingRulesSet'
